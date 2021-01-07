@@ -1,0 +1,11 @@
+h1,
+p {
+  font-family: Lato;
+}
+
+a,
+button,
+input {
+  margin-left: 10px;
+  margin-right: 10px;
+}
