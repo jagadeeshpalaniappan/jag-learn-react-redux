@@ -2,75 +2,158 @@ import React from "react";
 import { Provider, connect } from "react-redux";
 import { createStore, combineReducers } from "redux";
 
-// ###################################### REDUX #####################################
-//------------------ Actions -------------
+import { Footer, Link, TodoList } from "./components";
 
-// ACTION-TYPES:
-const INCREMENT = "INCREMENT";
-const DECREMENT = "DECREMENT";
+import { connect } from "react-redux";
 
-// ACTION-CREATORS:
-const incrementAction = payload => ({ type: INCREMENT, payload });
-const decrementAction = payload => ({ type: DECREMENT, payload });
+// ------
 
-//------------------ Reducers -------------
+let nextTodoId = 0;
+export const addTodo = text => ({
+  type: "ADD_TODO",
+  id: nextTodoId++,
+  text
+});
 
-const defaultState = { counter: 0 };
+export const setVisibilityFilter = filter => ({
+  type: "SET_VISIBILITY_FILTER",
+  filter
+});
 
-const appReducer = (state = defaultState, action) => {
-  console.log("appReducer:", { state, action });
+export const toggleTodo = id => ({
+  type: "TOGGLE_TODO",
+  id
+});
+
+export const VisibilityFilters = {
+  SHOW_ALL: "SHOW_ALL",
+  SHOW_COMPLETED: "SHOW_COMPLETED",
+  SHOW_ACTIVE: "SHOW_ACTIVE"
+};
+
+// -----
+
+const todos = (state = [], action) => {
   switch (action.type) {
-    case INCREMENT:
-      return { ...state, counter: state.counter + action.payload.amount };
-    case DECREMENT:
-      return { ...state, counter: state.counter - action.payload.amount };
+    case "ADD_TODO":
+      return [
+        ...state,
+        {
+          id: action.id,
+          text: action.text,
+          completed: false
+        }
+      ];
+    case "TOGGLE_TODO":
+      return state.map(todo => (todo.id === action.id ? { ...todo, completed: !todo.completed } : todo));
     default:
       return state;
   }
 };
 
-//------------------ Store -------------
+const visibilityFilter = (state = VisibilityFilters.SHOW_ALL, action) => {
+  switch (action.type) {
+    case "SET_VISIBILITY_FILTER":
+      return action.filter;
+    default:
+      return state;
+  }
+};
 
-const rootReducer = combineReducers({ appState: appReducer });
+const rootReducer = combineReducers({
+  todos,
+  visibilityFilter
+});
 const appStore = createStore(rootReducer);
 
-// ###################################### COMP #####################################
+// ------
 
-const Counter = ({ counter, increment, decrement }) => {
-  console.log("Counter");
+//------------
+//------------
+//------------
+
+//------------
+
+const mapStateToProps = (state, ownProps) => ({
+  active: ownProps.filter === state.visibilityFilter
+});
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  onClick: () => dispatch(setVisibilityFilter(ownProps.filter))
+});
+
+const FilterLink = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Link);
+
+//------------
+const AddTodo = ({ dispatch }) => {
+  let input;
+
   return (
     <div>
-      <span>Counter: ## {counter} ## </span>
-      <button onClick={() => increment({ amount: 1 })}>INCREMENT</button>
-      <button onClick={() => decrement({ amount: 1 })}>DECREMENT</button>
+      <form
+        onSubmit={e => {
+          e.preventDefault();
+          if (!input.value.trim()) {
+            return;
+          }
+          dispatch(addTodo(input.value));
+          input.value = "";
+        }}
+      >
+        <input ref={node => (input = node)} />
+        <button type="submit">Add Todo</button>
+      </form>
     </div>
   );
 };
 
-const mapStateToProps = state => {
-  return {
-    counter: state.appState.counter
+const AddTodoContainer = connect()(AddTodo);
+
+//------------
+
+import { connect } from "react-redux";
+
+const VisibleTodoList = () => {
+  const getVisibleTodos = (todos, filter) => {
+    switch (filter) {
+      case VisibilityFilters.SHOW_ALL:
+        return todos;
+      case VisibilityFilters.SHOW_COMPLETED:
+        return todos.filter(t => t.completed);
+      case VisibilityFilters.SHOW_ACTIVE:
+        return todos.filter(t => !t.completed);
+      default:
+        throw new Error("Unknown filter: " + filter);
+    }
   };
+
+  const mapStateToProps = state => ({
+    todos: getVisibleTodos(state.todos, state.visibilityFilter)
+  });
+
+  const mapDispatchToProps = dispatch => ({
+    toggleTodo: id => dispatch(toggleTodo(id))
+  });
+
+  const VisibleTodoList = connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(TodoList);
+
+  return VisibleTodoList;
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    increment: payload => dispatch(incrementAction(payload)),
-    decrement: payload => dispatch(decrementAction(payload))
-  };
-};
+//------------
 
-const CounterContainer = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(React.memo(Counter));
-
-const App = () => {
-  return (
-    <Provider store={appStore}>
-      <CounterContainer />
-    </Provider>
-  );
-};
+const App = () => (
+  <Provider store={appStore}>
+    <AddTodoContainer />
+    <VisibleTodoList />
+    <Footer />
+  </Provider>
+);
 
 export default App;

@@ -50,7 +50,6 @@ const TodoItem = ({ todo, toggleTodo }) => {
 const TodoItemMemozd = React.memo(TodoItem);
 
 //------------------ Todos ------------- [PERF-ISSUE-FIXED]
-
 const Todos = ({ todos, addTodo, toggleTodo }) => {
   console.log("Todos");
   return (
