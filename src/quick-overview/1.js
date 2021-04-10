@@ -1,26 +1,23 @@
 import React from "react";
-import { Provider } from "react-redux";
+import { Provider, connect } from "react-redux";
 import { createStore, combineReducers } from "redux";
 
+// ###################################### REDUX #####################################
 //------------------ Actions -------------
 
 // ACTION-TYPES:
 const INCREMENT = "INCREMENT";
-export const DECREMENT = "DECREMENT";
+const DECREMENT = "DECREMENT";
 
 // ACTION-CREATORS:
-export const incrementAction = payload => {
-  return { type: INCREMENT, payload };
-};
-export const decrementAction = payload => {
-  return { type: DECREMENT, payload };
-};
+const incrementAction = payload => ({ type: INCREMENT, payload });
+const decrementAction = payload => ({ type: DECREMENT, payload });
 
 //------------------ Reducers -------------
 
 const defaultState = { counter: 0 };
 
-export const appReducer = (state = defaultState, action) => {
+const appReducer = (state = defaultState, action) => {
   console.log("appReducer:", { state, action });
   switch (action.type) {
     case INCREMENT:
@@ -34,24 +31,18 @@ export const appReducer = (state = defaultState, action) => {
 
 //------------------ Store -------------
 
-const rootReducer = combineReducers({
-  appState: appReducer
-});
-
+const rootReducer = combineReducers({ appState: appReducer });
 const appStore = createStore(rootReducer);
 
-//------------------ Components -------------
+// ###################################### COMP #####################################
 
 const Counter = ({ counter, increment, decrement }) => {
   console.log("Counter");
   return (
     <div>
-      <h3>Counter: (Simple)</h3>
-      <div>
-        <span>## {counter} ## </span>
-        <button onClick={() => increment({ amount: 1 })}>INCREMENT</button>
-        <button onClick={() => decrement({ amount: 1 })}>DECREMENT</button>
-      </div>
+      <span>Counter: ## {counter} ## </span>
+      <button onClick={() => increment({ amount: 1 })}>INCREMENT</button>
+      <button onClick={() => decrement({ amount: 1 })}>DECREMENT</button>
     </div>
   );
 };

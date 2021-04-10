@@ -10,7 +10,7 @@ import "./style.css";
 // import App from "./apps/2-todo-crud/3-todo-crud--bad-perf/App";
 // import App from "./apps/2-todo-crud/4-todo-crud-simple/App";
 // import App from "./apps/2-todo-crud/5-todo-crud-better/App";
-import App from "./apps/2-todo-crud/6-todo-crud-filters--betterPerf2/App";
+// import App from "./apps/2-todo-crud/6-todo-crud-filters--betterPerf2/App";
 
 // TODO: (CRUD) with visibility filter
 // import App from "./apps/6-todo-crud-filters-simple/App";
@@ -28,5 +28,7 @@ import App from "./apps/2-todo-crud/6-todo-crud-filters--betterPerf2/App";
 // Shopping Cart
 // import App from "./redux-examples/9-shopping-cart-simple/App";
 // import App from "./redux-official-examples/2-tree-view/App";
+
+import App from "./quick-overview/1";
 
 ReactDOM.render(<App />, document.getElementById("root"));
