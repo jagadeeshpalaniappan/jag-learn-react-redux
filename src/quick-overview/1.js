@@ -4,7 +4,6 @@ import { createStore, combineReducers } from "redux";
 
 // ###################################### REDUX #####################################
 //------------------ Actions -------------
-
 // ACTION-TYPES:
 const INCREMENT = "INCREMENT";
 const DECREMENT = "DECREMENT";
@@ -14,7 +13,6 @@ const incrementAction = payload => ({ type: INCREMENT, payload });
 const decrementAction = payload => ({ type: DECREMENT, payload });
 
 //------------------ Reducers -------------
-
 const defaultState = { counter: 0 };
 
 const appReducer = (state = defaultState, action) => {
@@ -30,12 +28,12 @@ const appReducer = (state = defaultState, action) => {
 };
 
 //------------------ Store -------------
-
 const rootReducer = combineReducers({ appState: appReducer });
 const appStore = createStore(rootReducer);
 
-// ###################################### COMP #####################################
+// #################################### REACT-COMP ####################################
 
+//------------------ Counter -------------
 const Counter = ({ counter, increment, decrement }) => {
   console.log("Counter");
   return (
@@ -46,25 +44,29 @@ const Counter = ({ counter, increment, decrement }) => {
     </div>
   );
 };
+// memoizeCompProps: shallow compare props and decide re-render
+const CounterMzd = React.memo(Counter);
 
-const mapStateToProps = state => {
+// extractData: from Redux State
+const mapStateToProps = (state, ownProps) => {
   return {
     counter: state.appState.counter
   };
 };
 
-const mapDispatchToProps = dispatch => {
+// dispatchReduxActions:
+const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     increment: payload => dispatch(incrementAction(payload)),
     decrement: payload => dispatch(decrementAction(payload))
   };
 };
 
-const CounterContainer = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(React.memo(Counter));
+// connectReduxStore:
+// prettier-ignore
+const CounterContainer = connect(mapStateToProps,mapDispatchToProps)(CounterMzd);
 
+//------------------ App -------------
 const App = () => {
   return (
     <Provider store={appStore}>
