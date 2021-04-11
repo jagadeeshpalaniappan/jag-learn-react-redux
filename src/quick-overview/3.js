@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
-import { Provider, connect } from "react-redux";
 import { createStore, combineReducers } from "redux";
+import { Provider, connect } from "react-redux";
+import { createSelector } from "reselect";
 import { Counter, AddTodoForm, TodoList, FiltersForm, VisibilityFilters } from "./components";
-import { connect } from "react-redux";
 
 // ###################################### REDUX #####################################
 
@@ -101,6 +101,7 @@ const AddTodo = (() => {
     addTodo: payload => dispatch(addTodoAction(payload))
   });
 
+  // connectReduxStore:
   // prettier-ignore
   const AddTodo = connect(null, mapDispatchToProps)(AddTodoForm);
   return AddTodo;
@@ -125,30 +126,29 @@ const Filters = (() => {
 //------------ VisibleTodoList:
 
 const VisibleTodoList = (() => {
-  const getVisibleTodos = (todos, filter) => {
-    console.log("getVisibleTodos");
-    switch (filter) {
-      case VisibilityFilters.SHOW_ALL:
-        return todos;
-      case VisibilityFilters.SHOW_COMPLETED:
-        return todos.filter(t => t.completed);
-      case VisibilityFilters.SHOW_ACTIVE:
-        return todos.filter(t => !t.completed);
-      default:
-        throw new Error("Unknown filter: " + filter);
-    }
-  };
+  const getVisibilityFilter = state => state.todoState.visibilityFilter;
+  const getTodos = state => state.todoState.todos;
 
-  /*
-  PROBLEM:
-  - `todos` is calculated every time the state tree is updated.
-  - if `getVisibleTodos` fn is expensive // it cause performance issues
-  SOLN:
-  - Reselect can help to avoid these unnecessary recalculations.
-  */
+  const getVisibleTodos = createSelector(
+    [getVisibilityFilter, getTodos],
+    (filter, todos) => {
+      console.log("getVisibleTodos");
+      switch (filter) {
+        case VisibilityFilters.SHOW_ALL:
+          return todos;
+        case VisibilityFilters.SHOW_COMPLETED:
+          return todos.filter(t => t.completed);
+        case VisibilityFilters.SHOW_ACTIVE:
+          return todos.filter(t => !t.completed);
+        default:
+          return todos;
+      }
+    }
+  );
+
   const mapStateToProps = state => {
     return {
-      todos: getVisibleTodos(state.todoState.todos, state.todoState.visibilityFilter)
+      todos: getVisibleTodos(state)
     };
   };
 
@@ -157,7 +157,7 @@ const VisibleTodoList = (() => {
   });
 
   // prettier-ignore
-  const VisibleTodoList = connect(mapStateToProps, mapDispatchToProps)(TodoList);
+  const VisibleTodoList = connect(mapStateToProps,mapDispatchToProps)(TodoList);
   return VisibleTodoList;
 })();
 
