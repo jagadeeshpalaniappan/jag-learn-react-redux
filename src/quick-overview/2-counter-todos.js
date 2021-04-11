@@ -38,7 +38,7 @@ const countReducer = (state = defaultCountState, action) => {
 };
 
 const defaultTodosState = {
-  todos: [{ id: 1, text: "One", completed: false }],
+  todos: [{ id: "101", text: "One", completed: false }],
   visibilityFilter: VisibilityFilters.SHOW_ALL
 };
 const todosReducer = (state = defaultTodosState, action) => {
