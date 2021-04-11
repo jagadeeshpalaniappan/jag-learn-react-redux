@@ -29,8 +29,8 @@ import "./style.css";
 // import App from "./redux-examples/9-shopping-cart-simple/App";
 // import App from "./redux-official-examples/2-tree-view/App";
 
-import App from "./quick-overview/1-counter";
-import App from "./quick-overview/2-counter-todos";
-import App from "./quick-overview/3-counter-todos-reselct";
+// import App from "./quick-overview/1-counter";
+// import App from "./quick-overview/2-counter-todos";
+import App from "./quick-overview/3-counter-todos-reselect";
 
 ReactDOM.render(<App />, document.getElementById("root"));
