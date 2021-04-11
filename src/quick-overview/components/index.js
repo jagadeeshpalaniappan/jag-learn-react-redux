@@ -1,6 +1,10 @@
 import React, { useRef } from "react";
 import PropTypes from "prop-types";
-import { VisibilityFilters } from "../2";
+
+// ###################################### CONSTANTS #####################################
+
+export const VisibilityFilters = { 
+  SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
 
 // #################################### Module: Counter #####################################
 

@@ -5,9 +5,7 @@ import { Counter, AddTodoForm, TodoList, FiltersForm } from "./components";
 import { connect } from "react-redux";
 import { v4 as uuid } from "uuid";
 
-// ###################################### #####################################
-// CONSTANTS
-export const VisibilityFilters = { SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
+
 
 // ###################################### REDUX #####################################
 
@@ -82,9 +80,7 @@ const CounterContainer = (() => {
 
   // extractData: from Redux State
   const mapStateToProps = (state, ownProps) => {
-    return {
-counter: state.countState.counter
-    };
+    return { counter: state.countState.counter };
   };
 
   // dispatchReduxActions:
