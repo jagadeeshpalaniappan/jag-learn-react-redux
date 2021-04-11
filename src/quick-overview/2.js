@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 import { Provider, connect } from "react-redux";
 import { createStore, combineReducers } from "redux";
-import { Counter, TodoList } from "./components";
+import { Counter, AddTodoForm, TodoList, FiltersForm } from "./components";
 import { connect } from "react-redux";
 import { v4 as uuid } from "uuid";
 
 // ###################################### #####################################
 // CONSTANTS
-const VisibilityFilters = { SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
+export const VisibilityFilters = { SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
 
 // ###################################### REDUX #####################################
 
@@ -83,7 +83,7 @@ const CounterContainer = (() => {
   // extractData: from Redux State
   const mapStateToProps = (state, ownProps) => {
     return {
-      counter: state.countState.counter
+counter: state.countState.counter
     };
   };
 
@@ -103,63 +103,20 @@ const CounterContainer = (() => {
 
 //------------ AddTodo:
 
-const AddTodo = ({ dispatch }) => {
-  const todoFormRef = useRef(null);
-  const onSave = e => {
-    e.preventDefault();
-    const todoForm = todoFormRef.current;
-    dispatch(addTodoAction({ id: uuid(), text: todoForm.title.value }));
-    todoForm.title.value = "";
-  };
+const AddTodo = (() => {
+  const mapDispatchToProps = (dispatch, ownProps) => ({
+    addTodo: payload => dispatch(addTodoAction(payload))
+  });
 
-  return (
-    <div>
-      <form ref={todoFormRef} onSubmit={onSave}>
-        <input type="text" name="title" />
-        <button type="submit">Add Todo</button>
-      </form>
-    </div>
-  );
-};
-const AddTodoContainer = connect()(AddTodo);
+  // connectReduxStore:
+  // prettier-ignore
+  const AddTodo = connect(null, mapDispatchToProps)(AddTodoForm);
+  return AddTodo;
+})();
 
 //------------ Filters:
 
 const Filters = (() => {
-  const FiltersForm = ({ filter, setVisibilityFilter }) => {
-    const onFilterChange = filter => {
-      setVisibilityFilter({ filter });
-    };
-    return (
-      <div>
-        <span>Show: </span>
-        <input
-          type="radio"
-          name="filter"
-          value={VisibilityFilters.SHOW_ALL}
-          checked={filter === VisibilityFilters.SHOW_ALL}
-          onChange={() => onFilterChange(VisibilityFilters.SHOW_ALL)}
-        />
-        All
-        <input
-          type="radio"
-          name="filter"
-          value={VisibilityFilters.SHOW_ACTIVE}
-          checked={filter === VisibilityFilters.SHOW_ACTIVE}
-          onChange={() => onFilterChange(VisibilityFilters.SHOW_ACTIVE)}
-        />
-        Active
-        <input
-          type="radio"
-          name="filter"
-          value={VisibilityFilters.SHOW_COMPLETED}
-          checked={filter === VisibilityFilters.SHOW_COMPLETED}
-          onChange={() => onFilterChange(VisibilityFilters.SHOW_COMPLETED)}
-        />
-        Completed
-      </div>
-    );
-  };
   const mapStateToProps = (state, ownProps) => ({
     filter: state.appState.visibilityFilter
   });
@@ -223,7 +180,7 @@ const VisibleTodoList = (() => {
 const App = () => (
   <Provider store={appStore}>
     <CounterContainer />
-    <AddTodoContainer />
+    <AddTodo />
     <VisibleTodoList />
     <Filters />
   </Provider>

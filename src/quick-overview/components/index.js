@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import PropTypes from "prop-types";
+import { VisibilityFilters } from "../2";
 
 // #################################### Module: Counter #####################################
 
@@ -24,25 +25,63 @@ Counter.propTypes = {
 
 // #################################### Module: Todo #####################################
 
-export const Footer = () => (
-  <div>
-    <span>Show: </span>
-    <FilterLink filter={VisibilityFilters.SHOW_ALL}>All</FilterLink>
-    <FilterLink filter={VisibilityFilters.SHOW_ACTIVE}>Active</FilterLink>
-    <FilterLink filter={VisibilityFilters.SHOW_COMPLETED}>Completed</FilterLink>
-  </div>
-);
+export const FiltersForm = ({ filter, setVisibilityFilter }) => {
+  const onFilterChange = filter => {
+    setVisibilityFilter({ filter });
+  };
+  return (
+    <div>
+      <span>Show: </span>
+      <input
+        type="radio"
+        name="filter"
+        value={VisibilityFilters.SHOW_ALL}
+        checked={filter === VisibilityFilters.SHOW_ALL}
+        onChange={() => onFilterChange(VisibilityFilters.SHOW_ALL)}
+      />
+      All
+      <input
+        type="radio"
+        name="filter"
+        value={VisibilityFilters.SHOW_ACTIVE}
+        checked={filter === VisibilityFilters.SHOW_ACTIVE}
+        onChange={() => onFilterChange(VisibilityFilters.SHOW_ACTIVE)}
+      />
+      Active
+      <input
+        type="radio"
+        name="filter"
+        value={VisibilityFilters.SHOW_COMPLETED}
+        checked={filter === VisibilityFilters.SHOW_COMPLETED}
+        onChange={() => onFilterChange(VisibilityFilters.SHOW_COMPLETED)}
+      />
+      Completed
+    </div>
+  );
+};
 
-export const Link = ({ active, children, setVisibilityFilter }) => (
-  <button onClick={setVisibilityFilter} disabled={active} style={{ marginLeft: "4px" }}>
-    {children}
-  </button>
-);
+FiltersForm.propTypes = {
+  filter: PropTypes.string.isRequired,
+  setVisibilityFilter: PropTypes.func.isRequired
+};
 
-Link.propTypes = {
-  active: PropTypes.bool.isRequired,
-  children: PropTypes.node.isRequired,
-  onClick: PropTypes.func.isRequired
+export const AddTodoForm = ({ addTodo }) => {
+  const todoFormRef = useRef(null);
+  const onSave = e => {
+    e.preventDefault();
+    const todoForm = todoFormRef.current;
+    addTodo({ id: uuid(), text: todoForm.title.value });
+    todoForm.title.value = "";
+  };
+
+  return (
+    <div>
+      <form ref={todoFormRef} onSubmit={onSave}>
+        <input type="text" name="title" />
+        <button type="submit">Add Todo</button>
+      </form>
+    </div>
+  );
 };
 
 export const Todo = ({ onClick, completed, text }) => (
