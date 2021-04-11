@@ -52,18 +52,16 @@ const todosReducer = (state = defaultTodosState, action) => {
     case ADD_TODO:
       return {
         ...state,
-        // todos: [...state.todos, { id: payload.id, text: payload.text, completed: false }],
         todoIds: [...state.todoIds, payload.id],
         todoMap: {
           ...state.todoMap,
-          [payload.id]:  { id: payload.id, text: payload.text, completed: false }
+          [payload.id]: { id: payload.id, text: payload.text, completed: false }
         }
       };
     case TOGGLE_TODO:
       const todo = state.todoMap[payload.id];
       return {
         ...state,
-        // todos: state.todos.map(todo => (todo.id === payload.id ? { ...todo, completed: !todo.completed } : todo)),
         todoMap: {
           ...state.todoMap,
           [payload.id]: { ...todo, completed: !todo.completed }
@@ -193,7 +191,7 @@ const VisibleTodoList = (() => {
       todoIds: getVisibleTodos(state)
     };
   };
-
+  
   const mapDispatchToProps = dispatch => ({
     toggleTodo: id => dispatch(toggleTodoAction({ id }))
   });
