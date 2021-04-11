@@ -1,127 +1,186 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import { Provider, connect } from "react-redux";
 import { createStore, combineReducers } from "redux";
-import { Footer, Link, TodoList } from "./components";
+import { Counter, TodoList } from "./components";
 import { connect } from "react-redux";
 import { v4 as uuid } from "uuid";
 
-// ------
-export const ADD_TODO = "ADD_TODO";
-export const TOGGLE_TODO = "TOGGLE_TODO";
-export const SET_VISIBILITY_FILTER = "SET_VISIBILITY_FILTER";
+// ###################################### #####################################
+// CONSTANTS
+const VisibilityFilters = { SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
 
-let nextTodoId = 0;
-export const addTodo = text => ({ type: "ADD_TODO", id: uuid(), text });
-export const toggleTodo = id => ({ type: "TOGGLE_TODO", id });
-export const setVisibilityFilter = filter => ({ type: SET_VISIBILITY_FILTER, filter });
+// ###################################### REDUX #####################################
 
-export const VisibilityFilters = { SHOW_ALL: "SHOW_ALL", SHOW_COMPLETED: "SHOW_COMPLETED", SHOW_ACTIVE: "SHOW_ACTIVE" };
+// ACTION-TYPES:
+const INCREMENT = "INCREMENT";
+const DECREMENT = "DECREMENT";
 
-// -----
+const ADD_TODO = "ADD_TODO";
+const TOGGLE_TODO = "TOGGLE_TODO";
+const SET_VISIBILITY_FILTER = "SET_VISIBILITY_FILTER";
 
-// const todos = (state = [], action) => {
-//   switch (action.type) {
-//     case "ADD_TODO":
-//       return [...state, { id: action.id, text: action.text, completed: false }];
-//     case "TOGGLE_TODO":
-//       return state.map(todo => (todo.id === action.id ? { ...todo, completed: !todo.completed } : todo));
-//     default:
-//       return state;
-//   }
-// };
+// ACTION-CREATORS:
+const incrementAction = payload => ({ type: INCREMENT, payload });
+const decrementAction = payload => ({ type: DECREMENT, payload });
 
-// const visibilityFilter = (state = VisibilityFilters.SHOW_ALL, action) => {
-//   switch (action.type) {
-//     case "SET_VISIBILITY_FILTER":
-//       return action.filter;
-//     default:
-//       return state;
-//   }
-// };
+const addTodoAction = payload => ({ type: ADD_TODO, payload });
+const toggleTodoAction = payload => ({ type: TOGGLE_TODO, payload });
+const setVisibilityFilterAction = payload => ({ type: SET_VISIBILITY_FILTER, payload });
 
-const defaultAppState = {
+// REDUCERS:
+const defaultCountState = { counter: 0 };
+const countReducer = (state = defaultCountState, action) => {
+  console.log("countReducer:", { state, action });
+  const { payload } = action;
+  switch (action.type) {
+    case INCREMENT:
+      return { ...state, counter: state.counter + action.payload.amount };
+    case DECREMENT:
+      return { ...state, counter: state.counter - action.payload.amount };
+    default:
+      return state;
+  }
+};
+
+const defaultTodosState = {
   todos: [{ id: 1, text: "One", completed: false }],
   visibilityFilter: VisibilityFilters.SHOW_ALL
 };
-
-const appReducer = (state = defaultAppState, action) => {
-  console.log("appReducer:", { state, action });
+const todosReducer = (state = defaultTodosState, action) => {
+  console.log("todosReducer:", { state, action });
+  const { payload } = action;
   switch (action.type) {
     case ADD_TODO:
       return {
         ...state,
-        todos: [...state.todos, { id: action.id, text: action.text, completed: false }]
+        todos: [...state.todos, { id: payload.id, text: payload.text, completed: false }]
       };
     case TOGGLE_TODO:
       return {
         ...state,
-        todos: state.todos.map(todo => (todo.id === action.id ? { ...todo, completed: !todo.completed } : todo))
+        todos: state.todos.map(todo => (todo.id === payload.id ? { ...todo, completed: !todo.completed } : todo))
       };
     case SET_VISIBILITY_FILTER:
-      return { ...state, visibilityFilter: action.filter };
+      return { ...state, visibilityFilter: payload.filter };
     default:
       return state;
   }
 };
 
 const rootReducer = combineReducers({
-  appState: appReducer
-  // todos,
-  // visibilityFilter
+  countState: countReducer, // Count Module
+  appState: todosReducer // Todos Module
 });
 const appStore = createStore(rootReducer);
 
-// ------
+// ############################### REDUX-CONNECTED-COMPS #################################
 
-//------------
-//------------
-//------------
+//------------ CounterContainer:
+const CounterContainer = (() => {
+  // memoizeCompProps: shallow compare props and decide re-render
+  const CounterMzd = React.memo(Counter);
 
-//------------
+  // extractData: from Redux State
+  const mapStateToProps = (state, ownProps) => {
+    return {
+      counter: state.countState.counter
+    };
+  };
 
-const FilterLink = (() => {
-  const mapStateToProps = (state, ownProps) => ({
-    active: ownProps.filter === state.appState.visibilityFilter
-  });
+  // dispatchReduxActions:
+  const mapDispatchToProps = (dispatch, ownProps) => {
+    return {
+      increment: payload => dispatch(incrementAction(payload)),
+      decrement: payload => dispatch(decrementAction(payload))
+    };
+  };
 
-  const mapDispatchToProps = (dispatch, ownProps) => ({
-    onClick: () => dispatch(setVisibilityFilter(ownProps.filter))
-  });
-
-  const FilterLink = connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(Link);
-
-  return FilterLink;
+  // connectReduxStore:
+  // prettier-ignore
+  const CounterContainer = connect(mapStateToProps,mapDispatchToProps)(CounterMzd);
+  return CounterContainer;
 })();
 
-//------------
+//------------ AddTodo:
+
 const AddTodo = ({ dispatch }) => {
-  let input;
+  const todoFormRef = useRef(null);
+  const onSave = e => {
+    e.preventDefault();
+    const todoForm = todoFormRef.current;
+    dispatch(addTodoAction({ id: uuid(), text: todoForm.title.value }));
+    todoForm.title.value = "";
+  };
 
   return (
     <div>
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          dispatch(addTodo(input.value));
-          input.value = "";
-        }}
-      >
-        <input ref={node => (input = node)} />
+      <form ref={todoFormRef} onSubmit={onSave}>
+        <input type="text" name="title" />
         <button type="submit">Add Todo</button>
       </form>
     </div>
   );
 };
-
 const AddTodoContainer = connect()(AddTodo);
 
-//------------
+//------------ Filters:
+
+const Filters = (() => {
+  const FiltersForm = ({ filter, setVisibilityFilter }) => {
+    const onFilterChange = filter => {
+      setVisibilityFilter({ filter });
+    };
+    return (
+      <div>
+        <span>Show: </span>
+        <input
+          type="radio"
+          name="filter"
+          value={VisibilityFilters.SHOW_ALL}
+          checked={filter === VisibilityFilters.SHOW_ALL}
+          onChange={() => onFilterChange(VisibilityFilters.SHOW_ALL)}
+        />
+        All
+        <input
+          type="radio"
+          name="filter"
+          value={VisibilityFilters.SHOW_ACTIVE}
+          checked={filter === VisibilityFilters.SHOW_ACTIVE}
+          onChange={() => onFilterChange(VisibilityFilters.SHOW_ACTIVE)}
+        />
+        Active
+        <input
+          type="radio"
+          name="filter"
+          value={VisibilityFilters.SHOW_COMPLETED}
+          checked={filter === VisibilityFilters.SHOW_COMPLETED}
+          onChange={() => onFilterChange(VisibilityFilters.SHOW_COMPLETED)}
+        />
+        Completed
+      </div>
+    );
+  };
+  const mapStateToProps = (state, ownProps) => ({
+    filter: state.appState.visibilityFilter
+  });
+
+  const mapDispatchToProps = (dispatch, ownProps) => ({
+    setVisibilityFilter: payload => dispatch(setVisibilityFilterAction(payload))
+  });
+
+  const Filters = connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(FiltersForm);
+
+  return Filters;
+})();
+
+//------------ VisibleTodoList:
 
 const VisibleTodoList = (() => {
   const getVisibleTodos = (todos, filter) => {
+    console.log("getVisibleTodos");
     switch (filter) {
       case VisibilityFilters.SHOW_ALL:
         return todos;
@@ -134,15 +193,21 @@ const VisibleTodoList = (() => {
     }
   };
 
+  /*
+  PROBLEM:
+  - `todos` is calculated every time the state tree is updated.
+  - if `getVisibleTodos` fn is expensive // it cause performance issues
+  SOLN:
+  - Reselect can help to avoid these unnecessary recalculations.
+  */
   const mapStateToProps = state => {
-    console.log(state);
     return {
       todos: getVisibleTodos(state.appState.todos, state.appState.visibilityFilter)
     };
   };
 
   const mapDispatchToProps = dispatch => ({
-    toggleTodo: id => dispatch(toggleTodo(id))
+    toggleTodo: id => dispatch(toggleTodoAction({ id }))
   });
 
   const VisibleTodoList = connect(
@@ -153,23 +218,14 @@ const VisibleTodoList = (() => {
   return VisibleTodoList;
 })();
 
-//------------
-export const Footer = () => (
-  <div>
-    <span>Show: </span>
-    <FilterLink filter={VisibilityFilters.SHOW_ALL}>All</FilterLink>
-    <FilterLink filter={VisibilityFilters.SHOW_ACTIVE}>Active</FilterLink>
-    <FilterLink filter={VisibilityFilters.SHOW_COMPLETED}>Completed</FilterLink>
-  </div>
-);
-
-//------------
+//------------ App:
 
 const App = () => (
   <Provider store={appStore}>
+    <CounterContainer />
     <AddTodoContainer />
     <VisibleTodoList />
-    <Footer />
+    <Filters />
   </Provider>
 );
 
