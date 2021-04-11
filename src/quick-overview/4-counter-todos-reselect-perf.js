@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { createStore, combineReducers } from "redux";
 import { Provider, connect } from "react-redux";
 import { createSelector } from "reselect";
-import { Counter, AddTodoForm, TodoList, FiltersForm, VisibilityFilters } from "./components";
+import { Counter, AddTodoForm, TodoList, Todo, FiltersForm, VisibilityFilters } from "./components";
 
 // ###################################### REDUX #####################################
 
@@ -39,6 +39,10 @@ const countReducer = (state = defaultCountState, action) => {
 
 const defaultTodosState = {
   todos: [{ id: "101", text: "One", completed: false }],
+  todoIds: ["101"],
+  todoMap: {
+    "101": { id: "101", text: "One", completed: false }
+  },
   visibilityFilter: VisibilityFilters.SHOW_ALL
 };
 const todosReducer = (state = defaultTodosState, action) => {
@@ -48,12 +52,22 @@ const todosReducer = (state = defaultTodosState, action) => {
     case ADD_TODO:
       return {
         ...state,
-        todos: [...state.todos, { id: payload.id, text: payload.text, completed: false }]
+        // todos: [...state.todos, { id: payload.id, text: payload.text, completed: false }],
+        todoIds: [...state.todoIds, payload.id],
+        todoMap: {
+          ...state.todoMap,
+          [payload.id]:  { id: payload.id, text: payload.text, completed: false }
+        }
       };
     case TOGGLE_TODO:
+      const todo = state.todoMap[payload.id];
       return {
         ...state,
-        todos: state.todos.map(todo => (todo.id === payload.id ? { ...todo, completed: !todo.completed } : todo))
+        // todos: state.todos.map(todo => (todo.id === payload.id ? { ...todo, completed: !todo.completed } : todo)),
+        todoMap: {
+          ...state.todoMap,
+          [payload.id]: { ...todo, completed: !todo.completed }
+        }
       };
     case SET_VISIBILITY_FILTER:
       return { ...state, visibilityFilter: payload.filter };
@@ -123,32 +137,60 @@ const Filters = (() => {
   return Filters;
 })();
 
+//------------ Filters:
+
+const TodoContainer = (() => {
+  const mapStateToProps = (state, ownProps) => ({
+    todo: state.todoState.todoMap[ownProps.id]
+  });
+
+  const mapDispatchToProps = (dispatch, ownProps) => ({
+    onClick: () => dispatch(toggleTodoAction({ id: ownProps.id }))
+  });
+
+  // prettier-ignore
+  const TodoContainer = connect(mapStateToProps, mapDispatchToProps)(Todo);
+  return TodoContainer;
+})();
+
 //------------ VisibleTodoList:
+
+const TodoList = ({ todoIds }) => {
+  console.log("TodoList");
+  return (
+    <ul>
+      {todoIds.map(todoId => (
+        <TodoContainer key={todoId} id={todoId} />
+      ))}
+    </ul>
+  );
+};
 
 const VisibleTodoList = (() => {
   const getVisibilityFilter = state => state.todoState.visibilityFilter;
-  const getTodos = state => state.todoState.todos;
+  const getTodoIds = state => state.todoState.todoIds;
+  const getTodoMap = state => state.todoState.todoMap;
 
   const getVisibleTodos = createSelector(
-    [getVisibilityFilter, getTodos],
-    (filter, todos) => {
+    [getVisibilityFilter, getTodoIds, getTodoMap],
+    (filter, todoIds, todoMap) => {
       console.log("getVisibleTodos");
       switch (filter) {
         case VisibilityFilters.SHOW_ALL:
-          return todos;
+          return todoIds;
         case VisibilityFilters.SHOW_COMPLETED:
-          return todos.filter(t => t.completed);
+          return todoIds.filter(todoId => todoMap[todoId].completed);
         case VisibilityFilters.SHOW_ACTIVE:
-          return todos.filter(t => !t.completed);
+          return todoIds.filter(todoId => !todoMap[todoId].completed);
         default:
-          return todos;
+          return todoIds;
       }
     }
   );
 
   const mapStateToProps = state => {
     return {
-      todos: getVisibleTodos(state)
+      todoIds: getVisibleTodos(state)
     };
   };
 

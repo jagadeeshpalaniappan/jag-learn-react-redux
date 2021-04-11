@@ -34,6 +34,7 @@ Counter.propTypes = {
 // #################################### Module: Todo #####################################
 
 export const FiltersForm = ({ filter, setVisibilityFilter }) => {
+  console.log("FiltersForm");
   const onFilterChange = filter => {
     setVisibilityFilter({ filter });
   };
@@ -74,6 +75,7 @@ FiltersForm.propTypes = {
 };
 
 export const AddTodoForm = ({ addTodo }) => {
+  console.log("AddTodoForm");
   const todoFormRef = useRef(null);
   const onSave = e => {
     e.preventDefault();
@@ -92,16 +94,22 @@ export const AddTodoForm = ({ addTodo }) => {
   );
 };
 
-export const Todo = ({ onClick, completed, text }) => (
-  <li onClick={onClick} style={{ textDecoration: completed ? "line-through" : "none" }}>
-    {text}
-  </li>
-);
+export const Todo = ({ onClick, todo }) => {
+  console.log("Todo");
+  return (
+    <li onClick={onClick} style={{ textDecoration: todo.completed ? "line-through" : "none" }}>
+      {todo.text}
+    </li>
+  );
+};
 
 Todo.propTypes = {
   onClick: PropTypes.func.isRequired,
-  completed: PropTypes.bool.isRequired,
-  text: PropTypes.string.isRequired
+  todo: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    completed: PropTypes.bool.isRequired,
+    text: PropTypes.string.isRequired
+  }).isRequired
 };
 
 export const TodoList = ({ todos, toggleTodo }) => {
@@ -109,7 +117,7 @@ export const TodoList = ({ todos, toggleTodo }) => {
   return (
     <ul>
       {todos.map(todo => (
-        <Todo key={todo.id} {...todo} onClick={() => toggleTodo(todo.id)} />
+        <Todo key={todo.id} todo={todo} onClick={() => toggleTodo(todo.id)} />
       ))}
     </ul>
   );
