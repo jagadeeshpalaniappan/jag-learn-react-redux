@@ -38,7 +38,7 @@ const countReducer = (state = defaultCountState, action) => {
 };
 
 const defaultTodosState = {
-  todos: [{ id: "101", text: "One", completed: false }],
+  // todos: [{ id: "101", text: "One", completed: false }],
   todoIds: ["101"],
   todoMap: {
     "101": { id: "101", text: "One", completed: false }
@@ -191,7 +191,7 @@ const VisibleTodoList = (() => {
       todoIds: getVisibleTodos(state)
     };
   };
-  
+
   const mapDispatchToProps = dispatch => ({
     toggleTodo: id => dispatch(toggleTodoAction({ id }))
   });
